@@ -7,13 +7,15 @@ HOST, PORT = "10.0.0.57", 8080
 
 async def init_name(writer):
     name = sys.argv[1]
-    print(name)
 
     name = name.encode()
     size = pack('!L',len(name))
     writer.write(size)
     writer.write(name)
     await writer.drain()
+
+    print('Connected to server')
+
 
 async def send_messages(writer):
     
@@ -53,7 +55,7 @@ async def receive_messages(reader):
         
         # read message
         msg = await reader.readexactly(size)
-        print(f'content: {msg.decode()}')
+        print(f'{msg.decode()}')
 
         
 

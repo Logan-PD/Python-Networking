@@ -5,26 +5,19 @@ HOST, PORT = "0.0.0.0", 8080
 
 clients = {}
 
-async def broadcast(writer, size, msg):
-    for client in clients.values():
+async def broadcast(writer,  msg):
+    
+    for client in clients.keys():
         if client != writer:
+            msg = f'{clients[writer]}: {msg}'
+            msg = msg.encode()
+            size = pack('!L',len(msg))
             client.write(size)
             client.write(msg)
             await client.drain()
 
 
-
-async def handle_client(reader, writer):
-
-    # addr is tuple for the socket family
-    # AF_INET6: (host, port, flowinfo, scope_id)
-    # AF_INET (4): (host, port) 
-    addr = writer.get_extra_info('peername')
-    print(f'Client connected from: {addr}')
-
-
-
-
+async def init_name(reader, writer):
     try:
         packed_size = await reader.readexactly(4)
     except asyncio.IncompleteReadError:
@@ -40,15 +33,29 @@ async def handle_client(reader, writer):
     name = name.decode()
     print(f'client name: {name}')
 
-    clients[name] = writer
+    # add to client pool. Get client name by his socket/writer
+    clients[writer] = name
 
+    # broadcast this client has connected
     conn_msg = f'{name} just connected!'
     conn_msg = conn_msg.encode()
     conn_msg_size = pack('!L',len(conn_msg))
-    await broadcast(writer, conn_msg_size, conn_msg)
+    await broadcast(writer, conn_msg.decode())
+
+    return name
 
 
-################ ----- Begin loop
+async def handle_client(reader, writer):
+
+    # addr is tuple for the socket family
+    # AF_INET6: (host, port, flowinfo, scope_id)
+    # AF_INET (4): (host, port) 
+    addr = writer.get_extra_info('peername')
+    print(f'Client connected from: {addr}')
+
+    name = await init_name(reader,writer)
+
+
     while True:
         try:
             # read exactly 4 bytes to get size of message
@@ -63,13 +70,14 @@ async def handle_client(reader, writer):
         
         # read message
         msg = await reader.readexactly(size)
-        print(f'content: {msg.decode()}')
+        msg = msg.decode()
+        print(f'content: {msg}')
 
-        await broadcast(writer, packed_size, msg)
+        await broadcast(writer, msg)
     
     print('Client disconnected.')
     writer.close()
-    clients.pop(name)
+    clients.pop(writer)
 
 
 async def run_server():
