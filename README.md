@@ -6,7 +6,7 @@
 
 Original attempt used threading and socket libraries, but switched to higher level `asyncio` using `streamReader` and `streamWriter`.
 
-To replace the thread that got handled STDin, the external library `aioconsole` was installed. This allowed concurent receving of messages and waiting for input with `msg = await ainput()`.
+To replace the thread that handled STDin from each client, the external library `aioconsole` was installed. This allowed concurent receving of messages and waiting for input with `msg = await ainput()`.
 
 ## Data Transfer
 
