@@ -42,5 +42,5 @@ try:
 
   # read message
   msg = await reader.readexactly(size)
-  print(f'{msg.decode()}')
+  print(msg.decode())
   ```
