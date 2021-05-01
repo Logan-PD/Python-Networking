@@ -4,7 +4,7 @@
 * Server runs on `localhost` or `0.0.0.0`. 
 * Multiple clients connect and send unlimited messages to each other.
 
-Original attempt used threading and socket libraries, but switched to higher level `asyncio` using `streamReader` and `streamWriter`.
+Original attempt used threading and socket libraries, but switched to higher level `asyncio` using `gather(<list of coroutines>)` to run functions concurrently.
 
 To replace the thread that handled STDin from each client, the external library `aioconsole` was installed. This allowed concurent receving of messages and waiting for input with `msg = await ainput()`.
 
